@@ -1,0 +1,9 @@
+Philosophy is the systematized study of general and fundamental questions, such as those about existence, reason, knowledge, values, mind, and language. Such questions are often posed as problems to be studied or resolved. Some sources claim the term was coined by Pythagoras, although this legend is disputed. Philosophical methods include questioning, critical discussion, rational argument, and systematic presentation.
+
+Epistemology is the branch of philosophy that is concerned with knowledge. Epistemologists study the nature, origin, and scope of knowledge, epistemic justification, the rationality of belief, and various related issues. Epistemic questions include: What is knowledge? How is knowledge acquired? What do people know? How do we know what we know?
+
+Ethics or moral philosophy is a branch of philosophy that involves systematizing, defending, and recommending concepts of right and wrong behavior. The field of ethics, along with aesthetics, concerns matters of value; these fields comprise the branch of philosophy called axiology. Ethics seeks to resolve questions of human morality by defining concepts such as good and evil, right and wrong, virtue and vice, justice and crime.
+
+Metaphysics is the branch of philosophy that studies the fundamental nature of reality, the first principles of being, identity and change, space and time, causality, necessity, and possibility. It includes questions about the nature of consciousness and the relationship between mind and matter, between substance and attribute, and between potentiality and actuality. The word metaphysics comes from two Greek words that, together, literally mean after or behind or among the study of the natural.
+
+Logic is the systematic study of valid rules of inference, that is, the relations that lead to the acceptance of one proposition, the conclusion, on the basis of a set of other propositions, the premises. More broadly, logic is the analysis and appraisal of arguments.

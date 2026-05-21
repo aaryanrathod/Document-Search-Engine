@@ -1,0 +1,3 @@
+RAKE algorithm: for fast searching of keywords in a document
+FST: Finite State Transducer
+FSST: Fast Static Symbol Table 
