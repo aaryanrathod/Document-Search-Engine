@@ -7,6 +7,7 @@
 #include <string>
 #include <chrono> //for measuring time taken
 #include <conio.h>
+#include <cmath>
 
 using namespace std;
 namespace fs = std::filesystem; // Alias for readability
@@ -38,6 +39,7 @@ int main()
                     
                     // 6. Increment ID for the next file
                     doc_id++; 
+
                 }
             }
         } else {
@@ -46,6 +48,15 @@ int main()
     } catch (const fs::filesystem_error& e) {
         cerr << "Filesystem Error: " << e.what() << endl;
     }
+
+    //Finding average document length
+    double avg_doc_len = 0.0;
+    for(int i = 0; i < corpus.size(); i++)
+    {
+        avg_doc_len += corpus[i].total_words;
+    }
+    avg_doc_len = avg_doc_len / corpus.size();
+
     auto end_time_ind_gen = chrono::high_resolution_clock::now();
 
     auto duration_ind_gen = chrono::duration_cast<chrono::milliseconds>(end_time_ind_gen - start_time_ind_gen);
@@ -114,8 +125,6 @@ int main()
         }
 
 
-
-
         if(query == "/exit") break; 
         
         transform(query.begin(), query.end(), query.begin(), ::tolower);
@@ -128,13 +137,40 @@ int main()
 
         auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
 
+        vector<pair<double, int>> bm25_rank;
         if(found)
         {
-            cout << "Results for '" << query << "' (Found in " << duration.count() << " microseconds):" << endl;
+            cout << "Results for '" << query << "':" << endl;
             
+            // 1. Calculate Inverse Document Frequency
+            double N = corpus.size();
+            double n = Inverted_Index[query].size();
+            double idf = log( ((N - n + 0.5) / (n + 0.5)) + 1.0 );
+            
+            // 2. Loop through every document that contains the word
             for(auto pair : Inverted_Index[query])
             {
-                cout << " -> {Document " << pair.first << " with frequency: " << pair.second.frequency << "}\n";
+                int docID = pair.first;
+                int f = pair.second.frequency;
+                
+                // Get the length of this specific document
+                // (Assuming your docIDs start at 1, the index in corpus is docID - 1)
+                double D = corpus[docID - 1].total_words; 
+                
+                // 3. Calculate the BM25 TF component
+                double tf_bm25 = (f * (1.2 + 1.0)) / (f + 1.2 * (1.0 - 0.75 + 0.75 * (D / avg_doc_len)));
+                
+                // 4. Final Score
+                double bm25_score = idf * tf_bm25;
+                bm25_rank.push_back({bm25_score, docID});
+                
+                //cout << " -> {Document " << docID << " | BM25 Score: " << bm25_score << "}\n";
+            }
+            sort(bm25_rank.rbegin(), bm25_rank.rend()); //Highest to Lowest
+            cout << "\nYour words can be found in these documents:\n";
+            for(int i = 0; i < bm25_rank.size(); i++)
+            {
+                cout << "{DocID: " << bm25_rank[i].second << ", " << "bm25_rank: " << bm25_rank[i].first << "}" <<endl;
             }
             cout << endl;
         }

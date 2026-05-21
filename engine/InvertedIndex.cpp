@@ -12,9 +12,8 @@ void add_doc(int id, string title, string filepath)
     doc.id = id;
     doc.title = title;
     doc.filepath = filepath;
-    corpus.push_back(doc);
-
-    extract_words_simplified(id, filepath);
+    
+    doc.total_words = extract_words_simplified(id, filepath);
     // for(auto pair : Inverted_Index)
     // {
     //     cout << pair.first<< " -> [ ";
@@ -24,6 +23,7 @@ void add_doc(int id, string title, string filepath)
     //     }
     //     cout << "]"<<endl;
     // }
+    corpus.push_back(doc);
 
 
     cout <<"Added document: "<< title << endl;

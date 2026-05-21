@@ -10,10 +10,12 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-void extract_words_simplified(int currentDocID, const string& filename)
+int extract_words_simplified(int currentDocID, const string& filename)
 {
+    int words_counter = 0;
+
     ifstream file(filename);
-    if(!file) return;
+    if(!file) return 0;
 
     string content((istreambuf_iterator<char>(file)),    
                     istreambuf_iterator<char>());        
@@ -44,6 +46,7 @@ void extract_words_simplified(int currentDocID, const string& filename)
             }
             if(clean_word.empty()) continue;
 
+            words_counter++;
             if(Inverted_Index.find(clean_word) == Inverted_Index.end())
             {
                 global_trie.insert(clean_word);
@@ -68,6 +71,7 @@ void extract_words_simplified(int currentDocID, const string& filename)
             if(c >= 'a' && c <= 'z') clean_word += c;
         }
 
+        words_counter++;
         if(Inverted_Index.find(clean_word) == Inverted_Index.end())
         {
             global_trie.insert(clean_word);
@@ -75,4 +79,5 @@ void extract_words_simplified(int currentDocID, const string& filename)
 
         Inverted_Index[clean_word][currentDocID].frequency++;
     }
+    return words_counter;
 }

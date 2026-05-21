@@ -9,6 +9,7 @@ struct Document{
     int id;
     string title;
     string filepath;
+    int total_words = 0;
 };
 
 struct doc_info{
