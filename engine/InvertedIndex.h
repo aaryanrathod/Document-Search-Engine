@@ -14,6 +14,7 @@ struct Document{
 
 struct doc_info{
     int frequency = 0;
+    vector<int> positions;
 };
 
 extern vector<Document> corpus;

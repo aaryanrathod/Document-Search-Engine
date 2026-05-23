@@ -53,6 +53,7 @@ int extract_words_simplified(int currentDocID, const string& filename)
             }
             
             Inverted_Index[clean_word][currentDocID].frequency++;
+            Inverted_Index[clean_word][currentDocID].positions.push_back(words_counter);
 
 
             in_word = false;
@@ -78,6 +79,8 @@ int extract_words_simplified(int currentDocID, const string& filename)
         }
 
         Inverted_Index[clean_word][currentDocID].frequency++;
+        Inverted_Index[clean_word][currentDocID].positions.push_back(words_counter);
+
     }
     return words_counter;
 }

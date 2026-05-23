@@ -73,7 +73,7 @@ int main()
         {
             
             int ch = _getch();
-            
+
             // 13 is Enter key
             if(ch == 13) break;
             
@@ -98,12 +98,29 @@ int main()
             auto start_time_typahd = chrono::high_resolution_clock::now();
             //trie search
             vector<string> results;
+            string past_words = "";
             
             if(!query.empty())
             {
-                Node* node = global_trie.startswith(query);
+                //1. Split the string at the last space  (e.g: machine learning)
+                string curr_word = query;
+                
+                size_t last_space = query.find_last_of(' '); //find the index of the last space
+                if(last_space != string::npos)
+                {
+                    past_words = query.substr(0, last_space + 1);  //"machine "
+                    curr_word = query.substr(last_space + 1);      //"lea"
+                }
 
-                if(node != NULL) global_trie.dfs(node, results, query);
+                //2. Search in the trie with only the current word
+
+                Node* node = nullptr;
+                if(!curr_word.empty())
+                {
+                    node = global_trie.startswith(curr_word);
+                }
+
+                if(node != NULL) global_trie.dfs(node, results, curr_word);
             }
             
             auto end_time_typahd = chrono::high_resolution_clock::now();
@@ -116,10 +133,10 @@ int main()
 
             for(int j = 0; j < results.size(); j++)
             {
-                cout << results[j] << "    " << endl;
+                cout << " -> " << past_words << results[j] << endl;
             }
-            cout << endl << "Search: " << query;
             
+            cout << endl << "Search: " << query;
             
             cout << "\n\n[Typeahead latency: " << duration_typahd.count() << "microseconds]"<<endl;
         }
