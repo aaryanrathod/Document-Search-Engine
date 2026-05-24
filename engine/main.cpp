@@ -14,8 +14,8 @@ namespace fs = std::filesystem; // Alias for readability
 
 int main()
 {
-    // 1. Define the absolute path to your folder
-    string folderPath = "C:/Users/ASUS/OneDrive/Documents/Mini-Search/data"; 
+    // 1. Define the relative path to the data folder so anyone can run this on their machine
+    string folderPath = "./data"; 
     int doc_id = 1; // Start counter for document IDs
 
     auto start_time_ind_gen = chrono::high_resolution_clock::now();
@@ -145,52 +145,144 @@ int main()
         if(query == "/exit") break; 
         
         transform(query.begin(), query.end(), query.begin(), ::tolower);
+        
+        // Strip punctuation from the user's query just like TextPreprocessor does for documents
+        string clean_query = "";
+        for(char c : query)
+        {
+            if(c >= 'a' && c <= 'z') clean_query += c;
+            else if(c == ' ') clean_query += ' '; // We must preserve spaces to split tokens later!
+        }
+        query = clean_query;
 
         auto start_time = chrono::high_resolution_clock::now();
 
-        bool found = Inverted_Index.find(query) != Inverted_Index.end();
+        vector<string> tokens;
+        
+        size_t start = 0;
+        size_t end = query.find(' ');
 
-        auto end_time = chrono::high_resolution_clock::now();
-
-        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
-
-        vector<pair<double, int>> bm25_rank;
-        if(found)
+        while(end != string::npos)
         {
-            cout << "Results for '" << query << "':" << endl;
-            
-            // 1. Calculate Inverse Document Frequency
-            double N = corpus.size();
-            double n = Inverted_Index[query].size();
-            double idf = log( ((N - n + 0.5) / (n + 0.5)) + 1.0 );
-            
-            // 2. Loop through every document that contains the word
-            for(auto pair : Inverted_Index[query])
+            if(end != start)    //prevent empty tokens if there are double spaces
+            {
+                tokens.push_back(query.substr(start, end - start));
+            }
+            start = end + 1;
+            end = query.find(' ', start);    //the new end will be the space after the start
+        }
+        //push the final word
+        if(start < query.length())
+        {
+            tokens.push_back(query.substr(start));
+        }
+
+        //Score Accumulation
+        unordered_map<int, double> document_scores;
+        for(int i = 0; i < tokens.size(); i++)
+        {
+            if(Inverted_Index.find(tokens[i]) != Inverted_Index.end())
+            {
+                //calculating IDF
+                double N = corpus.size();
+                double n = Inverted_Index[tokens[i]].size();
+                double idf  = log( ((N - n + 0.5) / (n + 0.5)) + 1.0 );
+
+                //Loop through every document that contains the word
+                for(auto pair : Inverted_Index[tokens[i]])
+                {
+                    int docID = pair.first;
+                    int f = pair.second.frequency;
+
+                    // Get the length of this specific document
+                    // (Assuming your docIDs start at 1, the index in corpus is docID - 1)
+                    double D = corpus[docID - 1].total_words;
+
+                    // calculate tf_bm25 component
+                    double tf_bm25 = (f * (1.2 + 1.0)) / (f + 1.2 * (1.0 - 0.75 + 0.75 * (D / avg_doc_len)));
+                
+                    // 4. Final Score
+                    document_scores[docID] += idf * tf_bm25;
+
+                }
+            }
+        }
+
+        if(tokens.size() > 1)
+        {
+            for(auto& pair : document_scores)
             {
                 int docID = pair.first;
-                int f = pair.second.frequency;
-                
-                // Get the length of this specific document
-                // (Assuming your docIDs start at 1, the index in corpus is docID - 1)
-                double D = corpus[docID - 1].total_words; 
-                
-                // 3. Calculate the BM25 TF component
-                double tf_bm25 = (f * (1.2 + 1.0)) / (f + 1.2 * (1.0 - 0.75 + 0.75 * (D / avg_doc_len)));
-                
-                // 4. Final Score
-                double bm25_score = idf * tf_bm25;
-                bm25_rank.push_back({bm25_score, docID});
-                
-                //cout << " -> {Document " << docID << " | BM25 Score: " << bm25_score << "}\n";
+
+                //check if all the tokens are present in the document (AND requirement)
+
+                bool all_exist = true;
+                for(const string& token : tokens)
+                {
+                    if(Inverted_Index[token].find(docID) == Inverted_Index[token].end())
+                    {
+                        all_exist = false;
+                        break;
+                    }
+                }
+
+                if(all_exist)
+                {
+                    vector<int>& first_positions = Inverted_Index[tokens[0]][docID].positions;
+                    bool sequence_found = false;
+
+                    for(int pos : first_positions)
+                    {
+                        bool match = true;
+                        //checking if word 2 is at pos + 1, word 3 is at pos + 2, etc.
+                        for(int i = 1; i < tokens.size(); i++)
+                        {
+                            vector<int>& next_positions = Inverted_Index[tokens[i]][docID].positions;
+                            //we do a binary search as the text preprocessor already puts positions in ascending order
+                            if(!binary_search(next_positions.begin(), next_positions.end(), pos + i))
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                        if(match)
+                        {
+                            sequence_found = true;
+                            break;
+                        }
+                    }
+
+                    if(sequence_found)
+                    {
+                        document_scores[docID] += 100.0; //we will give a massive phrasal boost
+                    }
+                }
             }
-            sort(bm25_rank.rbegin(), bm25_rank.rend()); //Highest to Lowest
+        }
+        
+        //Sort and print
+        vector<pair<double, int>> bm25_rank;
+        for(auto pair : document_scores)
+        {
+            // Flip it to {score, docID} for sorting
+            bm25_rank.push_back({pair.second, pair.first});
+        }
+        
+        auto end_time = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
+        
+        if(!bm25_rank.empty())
+        {
+            sort(bm25_rank.rbegin(), bm25_rank.rend()); // Highest to Lowest
+            cout << "Results for '" << query << "' (Searched in " << duration.count() << " microseconds):" << endl;
             cout << "\nYour words can be found in these documents:\n";
             for(int i = 0; i < bm25_rank.size(); i++)
             {
-                cout << "{DocID: " << bm25_rank[i].second << ", " << "bm25_rank: " << bm25_rank[i].first << "}" <<endl;
+                cout << "{File: " << corpus[bm25_rank[i].second - 1].filepath << ", " << "BM25 Score: " << bm25_rank[i].first << "}" << endl;
             }
             cout << endl;
         }
+
         else 
         {
             cout << "No documents found containing '" << query << "' (Searched in " << duration.count() << " microseconds)\n\n";
