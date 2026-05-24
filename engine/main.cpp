@@ -58,7 +58,6 @@ int main()
     avg_doc_len = avg_doc_len / corpus.size();
 
     auto end_time_ind_gen = chrono::high_resolution_clock::now();
-
     auto duration_ind_gen = chrono::duration_cast<chrono::milliseconds>(end_time_ind_gen - start_time_ind_gen);
 
     cout << "Engine Boot Time: " << duration_ind_gen.count() << " milliseconds" << endl;
@@ -87,7 +86,7 @@ int main()
                     cout << "\b \b" << flush;
                 }
             }
-            
+
             else if(ch >= 32 && ch <= 126)
             {
                 char lower_ch = tolower(static_cast<unsigned char>(ch));
