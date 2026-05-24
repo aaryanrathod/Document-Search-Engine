@@ -10,11 +10,11 @@
 #include <cmath>
 
 using namespace std;
-namespace fs = std::filesystem; // Alias for readability
+namespace fs = std::filesystem;
 
 int main()
 {
-    // 1. Define the relative path to the data folder so anyone can run this on their machine
+
     string folderPath = "./data"; 
     int doc_id = 1; // Start counter for document IDs
 
