@@ -1,6 +1,7 @@
 #include "InvertedIndex.h"
 #include "trie.h"
 #include "TextPreprocessor.h"
+#include "LRUCache.h"
 #include <iostream>
 #include <algorithm>
 #include <filesystem> // Required for directory iteration
@@ -61,6 +62,8 @@ int main()
     auto duration_ind_gen = chrono::duration_cast<chrono::milliseconds>(end_time_ind_gen - start_time_ind_gen);
 
     cout << "Engine Boot Time: " << duration_ind_gen.count() << " milliseconds" << endl;
+
+    LRUCache global_cache(10);
 
     while(true)
     {
@@ -154,6 +157,27 @@ int main()
         }
         query = clean_query;
 
+        auto start_time_cached = chrono::high_resolution_clock::now();
+
+        const vector<pair<double, int>>& cached_results = global_cache.get(query);
+
+        vector<pair<double, int>> bm25_rank;
+
+        auto end_time_cached = chrono::high_resolution_clock::now();
+        auto duration_cached = chrono::duration_cast<chrono::microseconds>(end_time_cached - start_time_cached);
+
+        if(!cached_results.empty())
+        {
+            cout << "Results for " << query << " (Searched in " << duration_cached.count() << " microseconds):" << endl;
+            cout<<"CACHE HIT"<<endl;
+            cout << "\nYour words can be found in these documents:\n";
+            for(int i = 0; i < cached_results.size(); i++)
+            {
+                cout << "{File: " << corpus[cached_results[i].second - 1].filepath << ", " << "BM25 Score: " << cached_results[i].first << "}" << endl;
+            }
+            cout << endl;
+            continue;
+        }
         auto start_time = chrono::high_resolution_clock::now();
 
         vector<string> tokens;
@@ -258,15 +282,17 @@ int main()
                 }
             }
         }
+
         
         //Sort and print
-        vector<pair<double, int>> bm25_rank;
         for(auto pair : document_scores)
         {
             // Flip it to {score, docID} for sorting
             bm25_rank.push_back({pair.second, pair.first});
         }
         
+        global_cache.put(query, bm25_rank);
+
         auto end_time = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
         

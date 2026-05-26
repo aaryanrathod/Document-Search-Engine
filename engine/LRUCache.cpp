@@ -1,21 +1,25 @@
 #include "LRUCache.h"
 
-LRUCache::LRUCache(int cap) {
+LRUCache::LRUCache(int cap) 
+{
     capacity = cap;
 }
 
-vector<pair<double, int>> LRUCache::get(string query) {
-    // If query not in cache, return empty vector
-    if(cache_map.find(query) == cache_map.end()) {
-        return {};
+const vector<pair<double, int>>& LRUCache::get(string query) 
+{
+    auto it = cache_map.find(query); // Hash once
+    if(it == cache_map.end())
+    {
+        static const vector<pair<double, int>> empty_vec = {};
+        return empty_vec;
     }
-    // Splice instantly moves the node ot the front of the doubly linked list
-    lru_list.splice(lru_list.begin(), lru_list, cache_map[query].second); 
-    
-    return cache_map[query].first;
+
+    lru_list.splice(lru_list.begin(), lru_list, it->second.second); 
+    return it->second.first;
 }
 
-void LRUCache::put(string query, vector<pair<double, int>> results) {
+void LRUCache::put(string query, vector<pair<double, int>> results) 
+{
     // If the query already exists, update its results and move it to front
     if(cache_map.find(query) != cache_map.end()) {
         cache_map[query].first = results;

@@ -15,6 +15,6 @@ class LRUCache{
     
     public:
         LRUCache(int cap);
-        vector<pair<double, int>> get(string query);
+        const vector<pair<double, int>>& get(string query);
         void put(string query, vector<pair<double, int>> results);
 };
