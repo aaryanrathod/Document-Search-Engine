@@ -6,14 +6,14 @@
 vector<Document> corpus;
 unordered_map<string, unordered_map<int, doc_info>> Inverted_Index;
 
-void add_doc(int id, string title, string filepath)
+void add_doc(int id, string title, string filepath, BloomFilter& bloom)
 {
     Document doc;
     doc.id = id;
     doc.title = title;
     doc.filepath = filepath;
     
-    doc.total_words = extract_words_simplified(id, filepath);
+    doc.total_words = extract_words_simplified(id, filepath, bloom);
     // for(auto pair : Inverted_Index)
     // {
     //     cout << pair.first<< " -> [ ";

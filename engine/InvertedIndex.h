@@ -3,6 +3,7 @@
 #include<string>
 #include<vector>
 #include<unordered_map>
+#include "BloomFilter.h"
 using namespace std;
 
 struct Document{
@@ -20,4 +21,4 @@ struct doc_info{
 extern vector<Document> corpus;
 extern unordered_map<string, unordered_map<int, doc_info>> Inverted_Index;
 
-void add_doc(int id, string title, string filepath);
+void add_doc(int id, string title, string filepath, BloomFilter& bloom);

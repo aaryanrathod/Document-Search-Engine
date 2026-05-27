@@ -1,6 +1,7 @@
 #include "InvertedIndex.h"
 #include "trie.h"
 #include "TextPreprocessor.h"
+#include "BloomFilter.h"
 #include "LRUCache.h"
 #include <iostream>
 #include <algorithm>
@@ -19,6 +20,8 @@ int main()
     string folderPath = "./data"; 
     int doc_id = 1; // Start counter for document IDs
 
+    BloomFilter global_bloom(10000);
+
     auto start_time_ind_gen = chrono::high_resolution_clock::now();
     try {
         // 2. Verify the directory exists
@@ -36,7 +39,7 @@ int main()
                     string fullPath = entry.path().string();            // Full absolute path
 
                     // 5. Pass the variables into your function
-                    add_doc(doc_id, fileName, fullPath);
+                    add_doc(doc_id, fileName, fullPath, global_bloom);
                     
                     // 6. Increment ID for the next file
                     doc_id++; 
@@ -148,12 +151,12 @@ int main()
         
         transform(query.begin(), query.end(), query.begin(), ::tolower);
         
-        // Strip punctuation from the user's query just like TextPreprocessor does for documents
+        // Strip punctuation from the user's query
         string clean_query = "";
         for(char c : query)
         {
             if(c >= 'a' && c <= 'z') clean_query += c;
-            else if(c == ' ') clean_query += ' '; // We must preserve spaces to split tokens later!
+            else if(c == ' ') clean_query += ' '; // Must preserve spaces to split tokens later
         }
         query = clean_query;
 
@@ -194,10 +197,27 @@ int main()
             start = end + 1;
             end = query.find(' ', start);    //the new end will be the space after the start
         }
-        //push the final word
         if(start < query.length())
         {
             tokens.push_back(query.substr(start));
+        }
+
+        auto start_time_bloom = chrono::high_resolution_clock::now();
+        // Bloom Filter Bouncer
+        bool bloom_blocked = false;
+        for(const string& token : tokens) {
+            if(!global_bloom.mightContain(token)) {
+                bloom_blocked = true;
+                break; // If ANY token is missing, the exact multi-word query is blocked
+            }
+        }
+        
+        auto end_time_bloom = chrono::high_resolution_clock::now();
+        auto duration_bloom = chrono::duration_cast<chrono::microseconds>(end_time_bloom - start_time_bloom);
+        if(bloom_blocked) {
+            cout << duration_bloom.count() << "microseconds" << endl;
+            cout << "No documents found for '" << query << "' (Blocked instantly by Bloom Filter)\n\n";
+            continue; // Skip BM25 entirely
         }
 
         //Score Accumulation
@@ -291,14 +311,14 @@ int main()
             bm25_rank.push_back({pair.second, pair.first});
         }
         
-        global_cache.put(query, bm25_rank);
-
+        // global_cache.put will happen after sorting
         auto end_time = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
         
         if(!bm25_rank.empty())
         {
             sort(bm25_rank.rbegin(), bm25_rank.rend()); // Highest to Lowest
+            global_cache.put(query, bm25_rank); // CACHE IT AFTER SORTING
             cout << "Results for '" << query << "' (Searched in " << duration.count() << " microseconds):" << endl;
             cout << "\nYour words can be found in these documents:\n";
             for(int i = 0; i < bm25_rank.size(); i++)

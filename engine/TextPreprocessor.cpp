@@ -1,5 +1,6 @@
 #include "InvertedIndex.h"
 #include "trie.h"
+#include "BloomFilter.h"
 #include <iostream>
 #include <fstream>
 #include <string_view>
@@ -10,7 +11,7 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-int extract_words_simplified(int currentDocID, const string& filename)
+int extract_words_simplified(int currentDocID, const string& filename, BloomFilter& bloom)
 {
     int words_counter = 0;
 
@@ -46,6 +47,8 @@ int extract_words_simplified(int currentDocID, const string& filename)
             }
             if(clean_word.empty()) continue;
 
+            bloom.add(clean_word); // Add the word to the Bloom Filter
+
             words_counter++;
             if(Inverted_Index.find(clean_word) == Inverted_Index.end())
             {
@@ -71,6 +74,8 @@ int extract_words_simplified(int currentDocID, const string& filename)
         {
             if(c >= 'a' && c <= 'z') clean_word += c;
         }
+
+        bloom.add(clean_word); // Add the word to the Bloom Filter
 
         words_counter++;
         if(Inverted_Index.find(clean_word) == Inverted_Index.end())

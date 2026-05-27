@@ -58,7 +58,7 @@ bool Trie::search(string word) {
         if (!node->found_key(word[i])) return false;
         node = node->get(word[i]);
     }
-    return node->is_end(); // Simplified your original if-else block
+    return node->is_end();
 }
 
 Node* Trie::startswith(string prefix)
