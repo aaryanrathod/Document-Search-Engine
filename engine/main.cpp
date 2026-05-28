@@ -3,6 +3,7 @@
 #include "TextPreprocessor.h"
 #include "BloomFilter.h"
 #include "LRUCache.h"
+#include "QueryExpander.h"
 #include <iostream>
 #include <algorithm>
 #include <filesystem> // Required for directory iteration
@@ -14,8 +15,21 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+vector<string> split_by_space(const string& str) {
+    vector<string> res;
+    size_t s = 0, e = str.find(' ');
+    while (e != string::npos) {
+        if (e != s) res.push_back(str.substr(s, e - s));
+        s = e + 1;
+        e = str.find(' ', s);
+    }
+    if (s < str.length()) res.push_back(str.substr(s));
+    return res;
+}
+
 int main()
 {
+    cout << "Starting main..." << endl;
 
     string folderPath = "./data"; 
     int doc_id = 1; // Start counter for document IDs
@@ -33,6 +47,11 @@ int main()
                 
                 // 4. Check if the file is a regular file and has a .txt extension
                 if (entry.is_regular_file() && entry.path().extension() == ".txt") {
+                    
+                    // Skip synonyms.txt We don't want to index the dictionary
+                    if (entry.path().filename().string() == "synonyms.txt") {
+                        continue;
+                    }
                     
                     // Extract strings needed for your add_doc function
                     string fileName = entry.path().filename().string(); // e.g., "doc1.txt"
@@ -61,12 +80,21 @@ int main()
     }
     avg_doc_len = avg_doc_len / corpus.size();
 
+    // Pre-calculate IDF scores for all words in the index
+    double N = corpus.size();
+    for (const auto& pair : Inverted_Index) {
+        const string& word = pair.first;
+        double n = pair.second.size();
+        IDF_Table[word] = log(((N - n + 0.5) / (n + 0.5)) + 1.0);
+    }
+    
     auto end_time_ind_gen = chrono::high_resolution_clock::now();
     auto duration_ind_gen = chrono::duration_cast<chrono::milliseconds>(end_time_ind_gen - start_time_ind_gen);
 
     cout << "Engine Boot Time: " << duration_ind_gen.count() << " milliseconds" << endl;
 
     LRUCache global_cache(10);
+    QueryExpander global_expander("./data/synonyms.txt");
 
     while(true)
     {
@@ -126,6 +154,12 @@ int main()
                 }
 
                 if(node != NULL) global_trie.dfs(node, results, curr_word);
+
+                //Inject synonyms/acronyms into suggestions
+                vector<string> ui_expansions = global_expander.getExpansions({curr_word});
+                for(const string& exp : ui_expansions) {
+                    results.push_back(exp + " (Query expanded suggestion)");
+                }
             }
             
             auto end_time_typahd = chrono::high_resolution_clock::now();
@@ -151,12 +185,25 @@ int main()
         
         transform(query.begin(), query.end(), query.begin(), ::tolower);
         
-        // Strip punctuation from the user's query
+        // Clean the user's query: Allow numbers, collapse duplicate spaces, treat hyphens as spaces
         string clean_query = "";
+        bool last_was_space = true; // Trims leading spaces
         for(char c : query)
         {
-            if(c >= 'a' && c <= 'z') clean_query += c;
-            else if(c == ' ') clean_query += ' '; // Must preserve spaces to split tokens later
+            if(c == '-') c = ' ';
+            
+            if((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+                clean_query += c;
+                last_was_space = false;
+            }
+            else if(c == ' ' && !last_was_space) {
+                clean_query += ' ';
+                last_was_space = true;
+            }
+        }
+        // Trim trailing space
+        if(!clean_query.empty() && clean_query.back() == ' ') {
+            clean_query.pop_back();
         }
         query = clean_query;
 
@@ -202,65 +249,114 @@ int main()
             tokens.push_back(query.substr(start));
         }
 
+
+
+        vector<string> raw_expanded_tokens = global_expander.getExpansions(tokens);
+        vector<string> expanded_tokens;
+        for (const string& exp : raw_expanded_tokens) {
+            vector<string> sub = split_by_space(exp);
+            expanded_tokens.insert(expanded_tokens.end(), sub.begin(), sub.end());
+        }
+
         auto start_time_bloom = chrono::high_resolution_clock::now();
         // Bloom Filter Bouncer
         bool bloom_blocked = false;
         for(const string& token : tokens) {
-            if(!global_bloom.mightContain(token)) {
+            bool token_exists = global_bloom.mightContain(token);
+            
+            // If the original token doesn't exist, check if ANY of its expansions exist
+            if(!token_exists) {
+                vector<string> single_expansion_raw = global_expander.getExpansions({token});
+                vector<string> single_expansion;
+                for (const string& exp : single_expansion_raw) {
+                    vector<string> sub = split_by_space(exp);
+                    single_expansion.insert(single_expansion.end(), sub.begin(), sub.end());
+                }
+                for(const string& exp : single_expansion) {
+                    if(global_bloom.mightContain(exp)) {
+                        token_exists = true;
+                        break;
+                    }
+                }
+            }
+
+            if(!token_exists) {
                 bloom_blocked = true;
-                break; // If ANY token is missing, the exact multi-word query is blocked
+                break; // If ANY token (and all its expansions) are missing, block
             }
         }
         
         auto end_time_bloom = chrono::high_resolution_clock::now();
         auto duration_bloom = chrono::duration_cast<chrono::microseconds>(end_time_bloom - start_time_bloom);
         if(bloom_blocked) {
-            cout << duration_bloom.count() << "microseconds" << endl;
+            cout << "\n" << duration_bloom.count() << "microseconds" << endl;
             cout << "No documents found for '" << query << "' (Blocked instantly by Bloom Filter)\n\n";
             continue; // Skip BM25 entirely
         }
 
-        //Score Accumulation
+        // Score Accumulation
         unordered_map<int, double> document_scores;
+        
+        // 1. Score Original Tokens (1.0x Weight)
         for(int i = 0; i < tokens.size(); i++)
         {
             if(Inverted_Index.find(tokens[i]) != Inverted_Index.end())
             {
-                //calculating IDF
-                double N = corpus.size();
-                double n = Inverted_Index[tokens[i]].size();
-                double idf  = log( ((N - n + 0.5) / (n + 0.5)) + 1.0 );
+                // Lookup pre-calculated IDF
+                double idf = IDF_Table[tokens[i]];
 
                 //Loop through every document that contains the word
                 for(auto pair : Inverted_Index[tokens[i]])
                 {
                     int docID = pair.first;
                     int f = pair.second.frequency;
-
-                    // Get the length of this specific document
-                    // (Assuming your docIDs start at 1, the index in corpus is docID - 1)
                     double D = corpus[docID - 1].total_words;
 
                     // calculate tf_bm25 component
                     double tf_bm25 = (f * (1.2 + 1.0)) / (f + 1.2 * (1.0 - 0.75 + 0.75 * (D / avg_doc_len)));
                 
-                    // 4. Final Score
-                    document_scores[docID] += idf * tf_bm25;
-
+                    // Final Score (1.0x Multiplier for Exact Matches)
+                    document_scores[docID] += (idf * tf_bm25) * 1.0;
                 }
             }
         }
 
-        if(tokens.size() > 1)
+        // 2. Score Expanded Tokens (0.2x Weight)
+        for(int i = 0; i < expanded_tokens.size(); i++)
+        {
+            if(Inverted_Index.find(expanded_tokens[i]) != Inverted_Index.end())
+            {
+                // Lookup pre-calculated IDF
+                double idf = IDF_Table[expanded_tokens[i]];
+
+                for(auto pair : Inverted_Index[expanded_tokens[i]])
+                {
+                    int docID = pair.first;
+                    int f = pair.second.frequency;
+                    double D = corpus[docID - 1].total_words;
+
+                    double tf_bm25 = (f * (1.2 + 1.0)) / (f + 1.2 * (1.0 - 0.75 + 0.75 * (D / avg_doc_len)));
+                
+                    // Final Score (0.2x Multiplier for Synonyms/Acronyms)
+                    document_scores[docID] += (idf * tf_bm25) * 0.2;
+                }
+            }
+        }
+
+        // 3. Phrasal Boosting
+        // If the user typed "ml" (size 1), but it expanded to "machine", "learning" (size 2), 
+        // we should boost documents that contain the exact phrase "machine learning"
+        const vector<string>& sequence_tokens = (tokens.size() == 1 && expanded_tokens.size() > 1) ? expanded_tokens : tokens;
+
+        if(sequence_tokens.size() > 1)
         {
             for(auto& pair : document_scores)
             {
                 int docID = pair.first;
 
-                //check if all the tokens are present in the document (AND requirement)
-
+                //check if all the sequence tokens are present in the document
                 bool all_exist = true;
-                for(const string& token : tokens)
+                for(const string& token : sequence_tokens)
                 {
                     if(Inverted_Index[token].find(docID) == Inverted_Index[token].end())
                     {
@@ -271,16 +367,15 @@ int main()
 
                 if(all_exist)
                 {
-                    vector<int>& first_positions = Inverted_Index[tokens[0]][docID].positions;
+                    vector<int>& first_positions = Inverted_Index[sequence_tokens[0]][docID].positions;
                     bool sequence_found = false;
 
                     for(int pos : first_positions)
                     {
                         bool match = true;
-                        //checking if word 2 is at pos + 1, word 3 is at pos + 2, etc.
-                        for(int i = 1; i < tokens.size(); i++)
+                        for(int i = 1; i < sequence_tokens.size(); i++)
                         {
-                            vector<int>& next_positions = Inverted_Index[tokens[i]][docID].positions;
+                            vector<int>& next_positions = Inverted_Index[sequence_tokens[i]][docID].positions;
                             //we do a binary search as the text preprocessor already puts positions in ascending order
                             if(!binary_search(next_positions.begin(), next_positions.end(), pos + i))
                             {

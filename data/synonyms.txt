@@ -1,0 +1,501 @@
+# ============================================================
+# QUERY EXPANSION DATASET — synonyms.txt
+# Format: canonical_term,synonym1,synonym2,...
+# Every term on a row maps to all other terms on that row.
+# ============================================================
+ 
+# ============================================================
+# SECTION 1: BRITISH ↔ AMERICAN SPELLING VARIANTS
+# ============================================================
+colour,color
+colours,colors
+colourise,colorize
+colourful,colorful
+behaviour,behavior
+behaviours,behaviors
+behavioural,behavioral
+analyse,analyze
+analyses,analyzes
+analysed,analyzed
+analysing,analyzing
+centre,center
+centres,centers
+centred,centered
+organisation,organization
+organisations,organizations
+organisational,organizational
+organise,organize
+organised,organized
+licence,license
+licences,licenses
+licensed,licenced
+grey,gray
+greys,grays
+defence,defense
+defences,defenses
+defensive,defencive
+catalogue,catalog
+catalogues,catalogs
+programme,program
+programmes,programs
+programmer,programer
+favour,favor
+favours,favors
+favourite,favorite
+favourites,favorites
+honour,honor
+honours,honors
+honourable,honorable
+humour,humor
+humours,humors
+labour,labor
+labours,labors
+neighbour,neighbor
+neighbours,neighbors
+neighbourhood,neighborhood
+practise,practice
+travelled,traveled
+travelling,traveling
+traveller,traveler
+cancelled,canceled
+cancelling,canceling
+modelling,modeling
+modelled,modeled
+jewellery,jewelry
+fulfil,fulfill
+fulfilment,fulfillment
+skilful,skillful
+enrol,enroll
+enrolment,enrollment
+realise,realize
+realised,realized
+realising,realizing
+recognise,recognize
+recognised,recognized
+specialise,specialize
+specialised,specialized
+optimise,optimize
+optimised,optimized
+maximise,maximize
+minimise,minimize
+authorise,authorize
+authorised,authorized
+civilise,civilize
+standardise,standardize
+memorise,memorize
+categorise,categorize
+prioritise,prioritize
+emphasise,emphasize
+finalise,finalize
+initialise,initialize
+serialise,serialize
+normalise,normalize
+synchronise,synchronize
+customise,customize
+visualise,visualize
+mobilise,mobilize
+stabilise,stabilize
+fibre,fiber
+fibres,fibers
+litre,liter
+litres,liters
+metre,meter
+metres,meters
+theatre,theater
+theatres,theaters
+cheque,check
+cheques,checks
+plough,plow
+draught,draft
+draughts,drafts
+mould,mold
+moulds,molds
+smoulder,smolder
+manoeuvre,maneuver
+manoeuvres,maneuvers
+tyre,tire
+tyres,tires
+kerb,curb
+ageing,aging
+encyclopaedia,encyclopedia
+paediatric,pediatric
+orthopaedic,orthopedic
+gynaecology,gynecology
+anaesthetic,anesthetic
+haemoglobin,hemoglobin
+oesophagus,esophagus
+diarrhoea,diarrhea
+leukaemia,leukemia
+foetus,fetus
+mediaeval,medieval
+archaeology,archeology
+ 
+# ============================================================
+# SECTION 2: TECHNOLOGY ACRONYMS & EXPANSIONS
+# ============================================================
+ 
+# AI / ML
+ml,machine learning
+ai,artificial intelligence
+nlp,natural language processing
+cv,computer vision
+dl,deep learning
+rl,reinforcement learning
+nn,neural network
+cnn,convolutional neural network
+rnn,recurrent neural network
+lstm,long short term memory
+gpt,generative pretrained transformer
+llm,large language model
+rag,retrieval augmented generation
+gan,generative adversarial network
+vae,variational autoencoder
+bert,bidirectional encoder representations transformers
+xgb,xgboost gradient boosting
+svm,support vector machine
+knn,k nearest neighbors
+pca,principal component analysis
+eda,exploratory data analysis
+
+# Software Engineering
+api,application programming interface
+sdk,software development kit
+ide,integrated development environment
+cli,command line interface
+gui,graphical user interface
+tui,terminal user interface
+orm,object relational mapping
+crud,create read update delete
+rest,representational state transfer
+rpc,remote procedure call
+grpc,google remote procedure call
+oop,object oriented programming
+fp,functional programming
+ddd,domain driven design
+tdd,test driven development
+bdd,behavior driven development
+dry,dont repeat yourself
+solid,single responsibility open closed liskov interface dependency
+mvc,model view controller
+mvvm,model view viewmodel
+mvp,model view presenter
+ioc,inversion of control
+di,dependency injection
+
+# Web
+html,hypertext markup language
+css,cascading style sheets
+js,javascript
+ts,typescript
+jsx,javascript xml
+dom,document object model
+spa,single page application
+pwa,progressive web app
+seo,search engine optimization
+ssr,server side rendering
+csr,client side rendering
+cdn,content delivery network
+cors,cross origin resource sharing
+csrf,cross site request forgery
+xss,cross site scripting
+jwt,json web token
+oauth,open authorization
+saml,security assertion markup language
+wasm,webassembly
+http,hypertext transfer protocol
+https,hypertext transfer protocol secure
+url,uniform resource locator
+uri,uniform resource identifier
+xml,extensible markup language
+json,javascript object notation
+yaml,yet another markup language
+graphql,graph query language
+websocket,web socket
+
+# Infrastructure / Cloud
+aws,amazon web services
+gcp,google cloud platform
+k8s,kubernetes
+vm,virtual machine
+vms,virtual machines
+vpc,virtual private cloud
+iam,identity access management
+s3,simple storage service
+ec2,elastic compute cloud
+rds,relational database service
+elb,elastic load balancer
+sns,simple notification service
+sqs,simple queue service
+ecs,elastic container service
+eks,elastic kubernetes service
+ci,continuous integration
+cd,continuous deployment
+cicd,continuous integration continuous deployment
+iac,infrastructure as code
+sla,service level agreement
+slo,service level objective
+sre,site reliability engineering
+devops,development operations
+
+# Databases
+db,database
+sql,structured query language
+nosql,not only sql
+rdbms,relational database management system
+dbms,database management system
+acid,atomicity consistency isolation durability
+olap,online analytical processing
+oltp,online transaction processing
+etl,extract transform load
+elt,extract load transform
+dwh,data warehouse
+dml,data manipulation language
+ddl,data definition language
+dcl,data control language
+er,entity relationship
+pk,primary key
+fk,foreign key
+
+# Networking
+tcp,transmission control protocol
+udp,user datagram protocol
+ip,internet protocol
+dns,domain name system
+dhcp,dynamic host configuration protocol
+ftp,file transfer protocol
+ssh,secure shell
+ssl,secure sockets layer
+tls,transport layer security
+vpn,virtual private network
+nat,network address translation
+osi,open systems interconnection
+lan,local area network
+wan,wide area network
+mac,media access control
+arp,address resolution protocol
+smtp,simple mail transfer protocol
+imap,internet message access protocol
+pop,post office protocol
+iot,internet of things
+
+# Hardware
+cpu,central processing unit
+gpu,graphics processing unit
+tpu,tensor processing unit
+ram,random access memory
+rom,read only memory
+ssd,solid state drive
+hdd,hard disk drive
+usb,universal serial bus
+hdmi,high definition multimedia interface
+bios,basic input output system
+uefi,unified extensible firmware interface
+pci,peripheral component interconnect
+nvme,non volatile memory express
+
+# Security
+vpn,virtual private network
+ids,intrusion detection system
+ips,intrusion prevention system
+waf,web application firewall
+mfa,multi factor authentication
+2fa,two factor authentication
+sso,single sign on
+pki,public key infrastructure
+aes,advanced encryption standard
+rsa,rivest shamir adleman
+sha,secure hash algorithm
+md5,message digest 5
+cve,common vulnerabilities exposures
+owasp,open web application security project
+pentest,penetration testing
+ddos,distributed denial of service
+dos,denial of service
+mitm,man in the middle
+rbac,role based access control
+abac,attribute based access control
+
+# Project / Business
+pm,project management
+pmo,project management office
+kpi,key performance indicator
+okr,objectives key results
+roi,return on investment
+sow,statement of work
+poc,proof of concept
+mvp,minimum viable product
+rfp,request for proposal
+rfi,request for information
+nda,non disclosure agreement
+b2b,business to business
+b2c,business to consumer
+saas,software as a service
+paas,platform as a service
+iaas,infrastructure as a service
+
+# Data Formats & Protocols
+csv,comma separated values
+tsv,tab separated values
+pdf,portable document format
+png,portable network graphics
+jpg,jpeg joint photographic experts group
+gif,graphics interchange format
+svg,scalable vector graphics
+mp3,mpeg audio layer 3
+mp4,mpeg 4
+utf,unicode transformation format
+ascii,american standard code information interchange
+base64,base 64 encoding
+ 
+# ============================================================
+# SECTION 3: GENERAL SYNONYMS (EVERYDAY WORDS)
+# ============================================================
+ 
+# Speed
+fast,quick,rapid,swift,speedy,brisk,fleet,hasty,prompt,expeditious
+slow,sluggish,leisurely,unhurried,gradual,plodding,tardy,lagging
+ 
+# Size — Big
+big,large,huge,enormous,giant,massive,immense,vast,colossal,gigantic,grand,substantial
+small,tiny,little,miniature,compact,petite,slight,minuscule,microscopic,diminutive,mini
+ 
+# Intelligence
+smart,intelligent,clever,bright,sharp,brilliant,astute,shrewd,gifted,talented,wise,savvy
+stupid,dumb,foolish,ignorant,obtuse,dense,dim,unintelligent,naive,senseless
+ 
+# Emotions — Positive
+happy,joyful,pleased,content,glad,cheerful,elated,delighted,ecstatic,jubilant,blissful
+sad,unhappy,sorrowful,melancholy,gloomy,dejected,miserable,heartbroken,downcast,despondent
+angry,furious,irate,enraged,livid,incensed,outraged,agitated,irritated,annoyed,wrathful
+scared,afraid,fearful,terrified,frightened,anxious,nervous,apprehensive,timid,panicked
+ 
+# Quality
+good,great,excellent,superb,outstanding,exceptional,wonderful,fantastic,magnificent,splendid,fine
+bad,poor,terrible,awful,dreadful,horrible,lousy,inferior,subpar,deficient,mediocre
+ 
+# Actions — Common
+start,begin,initiate,launch,commence,kick off,open,trigger,activate,start up
+stop,end,halt,cease,terminate,conclude,finish,discontinue,suspend,abort,quit
+create,build,generate,make,produce,construct,design,develop,craft,fabricate,form
+delete,remove,erase,drop,purge,eliminate,clear,wipe,destroy,discard,expunge
+search,query,find,lookup,retrieve,locate,discover,seek,browse,scan,explore
+update,modify,change,edit,revise,alter,adjust,amend,correct,refresh,patch
+send,transmit,dispatch,deliver,forward,relay,transfer,submit,post,push,emit
+receive,get,obtain,fetch,download,retrieve,accept,collect,acquire,pull,grab
+show,display,render,present,visualise,exhibit,reveal,expose,output,print
+hide,conceal,mask,suppress,remove,obscure,collapse,fold,dismiss
+ 
+# Computing Actions
+install,setup,deploy,configure,provision,initialise,bootstrap
+run,execute,launch,trigger,invoke,call,start,fire
+debug,troubleshoot,diagnose,trace,inspect,profile,analyse
+test,validate,verify,check,assert,evaluate,audit,benchmark
+compile,build,transpile,minify,bundle,package
+refactor,rewrite,restructure,reorganise,clean,rearchitect
+cache,store,persist,buffer,save,memoize
+encrypt,encode,hash,obfuscate,scramble,cipher
+decrypt,decode,decipher,unhash
+ 
+# Errors & Problems
+error,bug,fault,defect,issue,problem,glitch,flaw,failure,exception,crash,anomaly
+fix,repair,resolve,patch,correct,debug,solve,address,remediate,rectify,restore
+warning,alert,notice,caution,notification,flag,signal,hint
+ 
+# Document / Text
+document,file,record,report,paper,note,entry,item,artifact
+text,content,string,body,message,data,payload,copy,prose
+word,term,token,keyword,phrase,label,tag,identifier
+paragraph,section,block,chunk,segment,passage,snippet
+summary,overview,abstract,synopsis,digest,recap,outline,brief
+article,post,blog,entry,writeup,piece,story,publication
+ 
+# People / Roles
+user,person,member,individual,account,client,customer,end user
+admin,administrator,superuser,root,manager,operator
+developer,dev,engineer,programmer,coder,contributor,builder
+designer,ux,ui designer,creative,artist
+analyst,data scientist,researcher,scientist,investigator
+ 
+# ============================================================
+# SECTION 4: DOMAIN-SPECIFIC SYNONYMS
+# ============================================================
+ 
+# E-commerce
+buy,purchase,order,checkout,acquire,procure,shop
+sell,list,offer,vend,market,retail,trade
+cart,basket,bag,trolley,wishlist
+payment,transaction,charge,billing,invoice,receipt,checkout
+delivery,shipping,dispatch,fulfilment,logistics
+ 
+# Search / Information Retrieval
+index,inverted index,search index,lookup table
+relevance,ranking,score,weight,similarity
+query,search term,keyword,input,request
+document,result,hit,match,record,page,entry
+stemming,lemmatisation,normalisation,root form
+stopword,common word,noise word,filler word
+tokenise,tokenize,parse,split,segment,break
+ 
+# Finance
+revenue,income,earnings,sales,turnover,receipts
+cost,expense,spend,expenditure,outlay,overhead,charge
+profit,gain,surplus,net income,margin
+loss,deficit,shortfall,negative margin
+budget,forecast,estimate,projection,plan,allocation
+asset,resource,holding,property,investment
+liability,debt,obligation,payable,burden
+equity,ownership,stake,share,net worth
+tax,levy,duty,tariff,surcharge,VAT,GST
+ 
+# Healthcare
+doctor,physician,clinician,medical doctor,practitioner,GP
+patient,individual,person,case,subject
+medicine,drug,medication,pharmaceutical,remedy,treatment,therapy
+hospital,clinic,medical centre,health centre,ward,facility
+diagnosis,assessment,evaluation,finding,prognosis
+symptom,sign,indicator,manifestation,complaint
+surgery,operation,procedure,intervention
+vaccine,immunisation,inoculation,shot,jab
+ 
+# Legal
+law,legislation,statute,regulation,rule,ordinance,act
+court,tribunal,judiciary,bench,forum
+contract,agreement,deed,covenant,pact,MOU
+clause,provision,section,term,condition,article
+plaintiff,claimant,petitioner,complainant,applicant
+defendant,respondent,accused
+lawyer,attorney,counsel,solicitor,barrister,advocate,legal advisor
+verdict,judgement,ruling,decision,finding,order
+ 
+# Education
+student,learner,pupil,trainee,attendee,scholar
+teacher,instructor,educator,tutor,professor,lecturer,faculty
+course,class,module,subject,curriculum,programme
+exam,test,assessment,quiz,evaluation,assignment
+grade,mark,score,result,rating,GPA
+ 
+# ============================================================
+# SECTION 5: PROGRAMMING LANGUAGE ALIASES
+# ============================================================
+js,javascript,ecmascript,es6,es2015
+ts,typescript
+py,python
+rb,ruby
+rs,rust
+go,golang
+cs,csharp,c#
+cpp,c++,cplusplus
+java,jvm
+kt,kotlin
+swift,swiftlang
+php,hypertext,preprocessor
+r,rlang,r language
+scala,scalang
+hs,haskell
+erl,erlang
+ex,elixir
+lua,lualang
+pl,perl
+sh,bash,shell,zsh,ksh
+asm,assembly,assembler
+sql,structured query language,ansi sql,t-sql,pl-sql,mysql,postgresql,sqlite

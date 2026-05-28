@@ -27,7 +27,7 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
     for(size_t i = 0; i < content.size(); ++i)
     {
     
-        bool is_space = isspace(static_cast<unsigned char>(content[i]));  
+        bool is_space = isspace(static_cast<unsigned char>(content[i])) || content[i] == '-';  
 
         if(!in_word && !is_space)
         {
@@ -43,7 +43,7 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
             string clean_word = "";
             for(char c : word)
             {
-                if(c >= 'a' && c <= 'z') clean_word += c;
+                if((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) clean_word += c;
             }
             if(clean_word.empty()) continue;
 
@@ -72,7 +72,7 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
         string clean_word = "";
         for(char c : word)
         {
-            if(c >= 'a' && c <= 'z') clean_word += c;
+            if((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) clean_word += c;
         }
 
         bloom.add(clean_word); // Add the word to the Bloom Filter

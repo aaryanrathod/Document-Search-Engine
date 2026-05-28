@@ -6,7 +6,7 @@ using namespace std;
 
 class Node{
     public:
-       Node* links[26];
+       Node* links[36];
         bool flag;
         Node();
         bool found_key(char ch);

@@ -1,9 +1,9 @@
 #pragma once        //stops the file from included twice
+#include "BloomFilter.h"
 
 #include<string>
 #include<vector>
 #include<unordered_map>
-#include "BloomFilter.h"
 using namespace std;
 
 struct Document{
@@ -20,5 +20,6 @@ struct doc_info{
 
 extern vector<Document> corpus;
 extern unordered_map<string, unordered_map<int, doc_info>> Inverted_Index;
+extern unordered_map<string, double> IDF_Table;
 
 void add_doc(int id, string title, string filepath, BloomFilter& bloom);

@@ -5,6 +5,7 @@
 
 vector<Document> corpus;
 unordered_map<string, unordered_map<int, doc_info>> Inverted_Index;
+unordered_map<string, double> IDF_Table;
 
 void add_doc(int id, string title, string filepath, BloomFilter& bloom)
 {
