@@ -1,6 +1,9 @@
+#include "TextPreprocessor.h"
 #include "InvertedIndex.h"
 #include "trie.h"
+#include "StopWords.h"
 #include "BloomFilter.h"
+#include "Stemmer.h"
 #include <iostream>
 #include <fstream>
 #include <string_view>
@@ -46,18 +49,17 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
                 if((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) clean_word += c;
             }
             if(clean_word.empty()) continue;
+            if(global_stopwords.isStopWord(clean_word)) continue;
 
-            bloom.add(clean_word); // Add the word to the Bloom Filter
+            string stemmed_word = porter_stem(clean_word);
+            bloom.add(stemmed_word);
 
             words_counter++;
-            if(Inverted_Index.find(clean_word) == Inverted_Index.end())
-            {
-                global_trie.insert(clean_word);
-            }
+            // We use stemmed_word for the Inverted_Index, but clean_word for the Trie!
+            global_trie.insert(clean_word); 
             
-            Inverted_Index[clean_word][currentDocID].frequency++;
-            Inverted_Index[clean_word][currentDocID].positions.push_back(words_counter);
-
+            Inverted_Index[stemmed_word][currentDocID].frequency++;
+            Inverted_Index[stemmed_word][currentDocID].positions.push_back(words_counter);
 
             in_word = false;
         }
@@ -75,16 +77,17 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
             if((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) clean_word += c;
         }
 
-        bloom.add(clean_word); // Add the word to the Bloom Filter
+        if(clean_word.empty()) return words_counter;
+        if(global_stopwords.isStopWord(clean_word)) return words_counter;
+
+        string stemmed_word = porter_stem(clean_word);
+        bloom.add(stemmed_word); 
 
         words_counter++;
-        if(Inverted_Index.find(clean_word) == Inverted_Index.end())
-        {
-            global_trie.insert(clean_word);
-        }
+        global_trie.insert(clean_word);
 
-        Inverted_Index[clean_word][currentDocID].frequency++;
-        Inverted_Index[clean_word][currentDocID].positions.push_back(words_counter);
+        Inverted_Index[stemmed_word][currentDocID].frequency++;
+        Inverted_Index[stemmed_word][currentDocID].positions.push_back(words_counter);
 
     }
     return words_counter;

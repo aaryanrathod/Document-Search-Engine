@@ -4,6 +4,8 @@
 #include "BloomFilter.h"
 #include "LRUCache.h"
 #include "QueryExpander.h"
+#include "StopWords.h"
+#include "Stemmer.h"
 #include <iostream>
 #include <algorithm>
 #include <filesystem> // Required for directory iteration
@@ -249,13 +251,30 @@ int main()
             tokens.push_back(query.substr(start));
         }
 
+        vector<string> filtered_tokens;
+        for(const string& it : tokens)
+        {
+            if(!global_stopwords.isStopWord(it)){
+                filtered_tokens.push_back(porter_stem(it));
+            }
+        }
+        tokens = filtered_tokens;
+        
+        if(tokens.empty()) {
+            cout << "No non-stopwords found in query.\n\n";
+            continue;
+        }
 
 
         vector<string> raw_expanded_tokens = global_expander.getExpansions(tokens);
         vector<string> expanded_tokens;
         for (const string& exp : raw_expanded_tokens) {
             vector<string> sub = split_by_space(exp);
-            expanded_tokens.insert(expanded_tokens.end(), sub.begin(), sub.end());
+            for(const string& s : sub) {
+                if(!global_stopwords.isStopWord(s)) {
+                    expanded_tokens.push_back(porter_stem(s));
+                }
+            }
         }
 
         auto start_time_bloom = chrono::high_resolution_clock::now();
@@ -270,7 +289,11 @@ int main()
                 vector<string> single_expansion;
                 for (const string& exp : single_expansion_raw) {
                     vector<string> sub = split_by_space(exp);
-                    single_expansion.insert(single_expansion.end(), sub.begin(), sub.end());
+                    for(const string& s : sub) {
+                        if(!global_stopwords.isStopWord(s)) {
+                            single_expansion.push_back(porter_stem(s));
+                        }
+                    }
                 }
                 for(const string& exp : single_expansion) {
                     if(global_bloom.mightContain(exp)) {
