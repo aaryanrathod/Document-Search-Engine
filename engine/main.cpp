@@ -155,7 +155,20 @@ int main()
                     node = global_trie.startswith(curr_word);
                 }
 
-                if(node != NULL) global_trie.dfs(node, results, curr_word);
+                if(node != NULL)
+                {
+                    //exact prefix found
+                    global_trie.dfs(node, results, curr_word);
+                }
+                else if(curr_word.length() >= 4)
+                {
+                     // Exact match failed. now ask fuzzy search
+                    vector<string> fuzzy_results = global_trie.fuzzy_autocomplete(curr_word, 1);
+                    for(const string& f : fuzzy_results) 
+                    {
+                        results.push_back(f + " (Did you mean?)");
+                    }
+                }
 
                 //Inject synonyms/acronyms into suggestions
                 vector<string> ui_expansions = global_expander.getExpansions({curr_word});
@@ -252,13 +265,22 @@ int main()
         }
 
         vector<string> filtered_tokens;
-        for(const string& it : tokens)
+        for(string& it : tokens)
         {
             if(!global_stopwords.isStopWord(it)){
+                // If the stemmed word isnt in the index, it might be a typo...
+                if(!global_bloom.mightContain(porter_stem(it)) && it.length() >= 4) {
+                    vector<string> fuzzy_res = global_trie.fuzzy_autocomplete(it, 1); // Allow 1 typo
+                    if(!fuzzy_res.empty()) {
+                        cout << "\n[Auto-corrected '" << it << "' to '" << fuzzy_res[0] << "']" << endl;
+                        it = fuzzy_res[0]; // Fix the typo before we stem
+                    }
+                }
                 filtered_tokens.push_back(porter_stem(it));
             }
         }
         tokens = filtered_tokens;
+
         
         if(tokens.empty()) {
             cout << "No non-stopwords found in query.\n\n";

@@ -25,6 +25,8 @@ class Trie{
         bool search(string word);
         Node* startswith(string prefix);
         void dfs(Node* node, vector<string>& results, string curr_word);
+        void fuzzy_search_recursive(Node* node, const string& query, vector<int>& prev_row, vector<string>& results, string curr_word, int max_edits);
+        vector<string> fuzzy_autocomplete(string query, int max_edits = 1);
 };
 
 extern Trie global_trie;

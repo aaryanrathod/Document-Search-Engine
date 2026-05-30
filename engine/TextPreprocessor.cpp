@@ -55,7 +55,7 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
             bloom.add(stemmed_word);
 
             words_counter++;
-            // We use stemmed_word for the Inverted_Index, but clean_word for the Trie!
+            // We use stemmed_word for the Inverted_Index, but clean_word for the Trie
             global_trie.insert(clean_word); 
             
             Inverted_Index[stemmed_word][currentDocID].frequency++;

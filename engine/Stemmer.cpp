@@ -36,7 +36,7 @@ string porter_stem(const string& word) {
     }
     
     // Step 3: Clean up trailing double letters (e.g., runn -> run, hopp -> hop)
-    // We leave 'l', 's', and 'z' alone (e.g., fall -> fall, miss -> miss)
+    // we leave 'l', 's', and 'z' alone (e.g., fall -> fall, miss -> miss)
     if (stripped && b.length() > 2) {
         if (b[b.length() - 1] == b[b.length() - 2] && 
             b.back() != 'l' && b.back() != 's' && b.back() != 'z') {

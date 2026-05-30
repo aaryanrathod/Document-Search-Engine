@@ -1,5 +1,5 @@
 #include "trie.h"
-
+#include <algorithm>
 using namespace std;
 
 Node::Node() {
@@ -95,6 +95,74 @@ void Trie::dfs(Node* node, vector<string>& results, string curr_word)
         }
     }
 }
+
+void Trie::fuzzy_search_recursive(Node* node, const string& query, vector<int>& prev_row, vector<string>& results, string curr_word, int max_edits) {
+    if (results.size() >= 5) return; // Stop if we have enough suggestions
+
+    int cols = query.size() + 1;
+    vector<int> curr_row(cols);
+    curr_row[0] = prev_row[0] + 1;
+
+    int min_dist = curr_row[0];
+    char ch = curr_word.back();
+
+    // Calculate the Levenshtein row for the current character
+    for (int i = 1; i < cols; ++i) 
+    {
+
+        int insert_cost = curr_row[i - 1] + 1;
+        int delete_cost = prev_row[i] + 1;
+        int replace_cost = prev_row[i - 1] + (query[i - 1] == ch ? 0 : 1);
+        curr_row[i] = min({insert_cost, delete_cost, replace_cost});
+        min_dist = min(min_dist, curr_row[i]);
+    }
+
+    // Dont search in the branch if it has too many errors
+    if (min_dist > max_edits) return; 
+
+    // If the edit distance from the current word to the full query is okay okay
+    if (curr_row.back() <= max_edits)
+    {
+        // Switch to exact autocomplete from this node downward
+        dfs(node, results, curr_word);
+    } else 
+    {
+        // Otherwise, continue exploring fuzzy paths
+        for (int i = 0; i < 36; ++i) 
+        {
+            if (node->links[i] != NULL) 
+            {
+                char next_ch = (i < 26) ? (i + 'a') : ((i - 26) + '0');
+                fuzzy_search_recursive(node->links[i], query, curr_row, results, curr_word + next_ch, max_edits);
+            }
+        }
+    }
+}
+
+vector<string> Trie::fuzzy_autocomplete(string query, int max_edits) 
+{
+    vector<string> results;
+    // Dont apply typo tolerance to tiny words (e.g., 'a', 'on', 'is')
+    if (query.length() < 4) return results; 
+    
+    int cols = query.size() + 1;
+    vector<int> first_row(cols);
+    for (int i = 0; i < cols; ++i) first_row[i] = i;
+
+    // Boot up the recursive search for every root branch
+    for (int i = 0; i < 36; ++i) 
+    {
+        if (root->links[i] != NULL) 
+        {
+            char next_ch = (i < 26) ? (i + 'a') : ((i - 26) + '0');
+            string curr_word = "";
+            curr_word += next_ch;
+            fuzzy_search_recursive(root->links[i], query, first_row, results, curr_word, max_edits);
+        }
+    }
+    return results;
+}
+
 
 
  
