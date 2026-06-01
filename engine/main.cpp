@@ -13,6 +13,7 @@
 #include <chrono> //for measuring time taken
 #include <conio.h>
 #include <cmath>
+#include <unordered_set>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -34,45 +35,68 @@ int main()
     cout << "Starting main..." << endl;
 
     string folderPath = "./data"; 
-    int doc_id = 1; // Start counter for document IDs
-
     BloomFilter global_bloom(10000);
 
     auto start_time_ind_gen = chrono::high_resolution_clock::now();
+    
+    // incremental indexing
+    bool index_loaded = false;
+    if (fs::exists("index.dat") && fs::exists("trie.dat")) {
+        cout << "Loading Index and Trie from disk..." << endl;
+        if (load_index("index.dat") && global_trie.load_trie("trie.dat")) {
+            index_loaded = true;
+            // Rebuild the Bloom Filter from the loaded Inverted Index keys
+            for (const auto& pair : Inverted_Index) {
+                global_bloom.add(pair.first);
+            }
+        }
+    }
+
+    // Build a set of existing file paths so we know which ones to skip
+    unordered_set<string> seen_files;
+    int max_id = 0;
+    if (index_loaded) {
+        for (const auto& doc : corpus) {
+            seen_files.insert(doc.filepath);
+            if (doc.id > max_id) max_id = doc.id;
+        }
+    }
+    
+    int doc_id = max_id + 1; // Start ID for new documents
+    int new_files_added = 0;
+
     try {
-        // 2. Verify the directory exists
-
         if (fs::exists(folderPath) && fs::is_directory(folderPath)) {
-            
-            // 3. Loop through all files in the directory
             for (const auto& entry : fs::directory_iterator(folderPath)) {
-                
-                // 4. Check if the file is a regular file and has a .txt extension
                 if (entry.is_regular_file() && entry.path().extension() == ".txt") {
+                    if (entry.path().filename().string() == "synonyms.txt") continue;
                     
-                    // Skip synonyms.txt We don't want to index the dictionary
-                    if (entry.path().filename().string() == "synonyms.txt") {
-                        continue;
+                    string fileName = entry.path().filename().string();
+                    string fullPath = entry.path().string();            
+
+                    // Incremental Check: if file not seen before, update it
+                    if (seen_files.find(fullPath) == seen_files.end()) {
+                        cout << "Indexing new file: " << fileName << endl;
+                        add_doc(doc_id, fileName, fullPath, global_bloom);
+                        doc_id++; 
+                        new_files_added++;
                     }
-                    
-                    // Extract strings needed for your add_doc function
-                    string fileName = entry.path().filename().string(); // e.g., "doc1.txt"
-                    string fullPath = entry.path().string();            // Full absolute path
-
-                    // 5. Pass the variables into your function
-                    add_doc(doc_id, fileName, fullPath, global_bloom);
-                    
-                    // 6. Increment ID for the next file
-                    doc_id++; 
-
                 }
             }
         } else {
-            cerr << "Error: Directory path does not exist or is incorrect." << endl;
+            cerr << "Error: Directory path does not exist." << endl;
         }
     } catch (const fs::filesystem_error& e) {
         cerr << "Filesystem Error: " << e.what() << endl;
     }
+
+    // If new files were added (or we built from scratch), save to disk for next time!
+    if (new_files_added > 0 || !index_loaded) {
+        cout << "Saving new index to disk..." << endl;
+        save_index("index.dat");
+        global_trie.save_trie("trie.dat");
+    }
+
 
     //Finding average document length
     double avg_doc_len = 0.0;

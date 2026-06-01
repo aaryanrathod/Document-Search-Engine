@@ -163,6 +163,46 @@ vector<string> Trie::fuzzy_autocomplete(string query, int max_edits)
     return results;
 }
 
+void Trie::save_recursive(Node* node, string curr_word, std::ofstream& out) {
+    // If we hit the end of a valid word, write it to disk!
+    if (node->is_end()) {
+        int len = curr_word.length();
+        out.write((char*)&len, sizeof(int));
+        out.write(curr_word.c_str(), len);
+    }
+    // Continue exploring the Trie
+    for (int i = 0; i < 36; ++i) {
+        if (node->links[i] != NULL) {
+            char next_ch = (i < 26) ? (i + 'a') : ((i - 26) + '0');
+            save_recursive(node->links[i], curr_word + next_ch, out);
+        }
+    }
+}
+
+void Trie::save_trie(const string& filename) {
+    std::ofstream out(filename, std::ios::binary);
+    if (!out) return;
+    save_recursive(root, "", out);
+}
+
+bool Trie::load_trie(const string& filename) {
+    std::ifstream in(filename, std::ios::binary);
+    if (!in) return false;
+    
+    while (true) {
+        int len;
+        // Try to read the next word length. If it fails, we reached the end of the file!
+        if (!in.read((char*)&len, sizeof(int))) break; 
+        
+        string word;
+        word.resize(len);
+        in.read(&word[0], len);
+        
+        // Instantly rebuild the Trie by inserting the word
+        insert(word); 
+    }
+    return true;
+}
 
 
  

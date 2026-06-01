@@ -23,3 +23,6 @@ extern unordered_map<string, unordered_map<int, doc_info>> Inverted_Index;
 extern unordered_map<string, double> IDF_Table;
 
 void add_doc(int id, string title, string filepath, BloomFilter& bloom);
+
+void save_index(const string& filename);
+bool load_index(const string& filename);
