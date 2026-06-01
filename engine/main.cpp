@@ -114,7 +114,7 @@ int main()
         cerr << "Filesystem Error: " << e.what() << endl;
     }
 
-    // If new files were added (or we built from scratch), save to disk for next time!
+    // If new files were added (or we built from scratch), save to disk for next time
     if (new_files_added > 0 || !index_loaded) {
         cout << "Saving new index to disk..." << endl;
         save_index("index.dat");
