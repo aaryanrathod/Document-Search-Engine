@@ -21,13 +21,15 @@ const vector<pair<double, int>>& LRUCache::get(string query)
 void LRUCache::put(string query, vector<pair<double, int>> results) 
 {
     // If the query already exists, update its results and move it to front
-    if(cache_map.find(query) != cache_map.end()) {
+    if(cache_map.find(query) != cache_map.end()) 
+    {
         cache_map[query].first = results;
         lru_list.splice(lru_list.begin(), lru_list, cache_map[query].second);
         return;
     }
     // If the cache is full, pop the oldest query from the back of the list and erase from the map
-    if(lru_list.size() == capacity) {
+    if(lru_list.size() == capacity)
+    {
         string last_key = lru_list.back();
         lru_list.pop_back();
         cache_map.erase(last_key);

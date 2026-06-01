@@ -11,9 +11,32 @@
 #include <filesystem> // Required for directory iteration
 #include <string>
 #include <chrono> //for measuring time taken
-#include <conio.h>
 #include <cmath>
 #include <unordered_set>
+
+//Cross-Platform Typeahead & Screen Clear
+#ifdef _WIN32
+    #include <conio.h>
+    #define CLEAR_SCREEN "cls"
+#else
+    #include <termios.h>
+    #include <unistd.h>
+    #define CLEAR_SCREEN "clear"
+    
+    //Linux/Mac implementation of _getch() using termios
+    int _getch() {
+        struct termios oldt, newt;
+        int ch;
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO); // Disable buffering and echo
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        ch = getchar();
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        return ch;
+    }
+#endif
+
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -21,12 +44,13 @@ namespace fs = std::filesystem;
 vector<string> split_by_space(const string& str) {
     vector<string> res;
     size_t s = 0, e = str.find(' ');
-    while (e != string::npos) {
-        if (e != s) res.push_back(str.substr(s, e - s));
-        s = e + 1;
+    while(e != string::npos)
+    {
+        if(e != s) res.push_back(str.substr(s, e-s));
+        s = e+1;
         e = str.find(' ', s);
     }
-    if (s < str.length()) res.push_back(str.substr(s));
+    if(s < str.length()) res.push_back(str.substr(s));
     return res;
 }
 
@@ -133,11 +157,11 @@ int main()
             
             int ch = _getch();
 
-            // 13 is Enter key
-            if(ch == 13) break;
+            // 13(WIN) and 10(Mac/Linux) is Enter key
+            if(ch == 13 || ch == 10) break;
             
-            //8 is backspace
-            if(ch == 8)
+            // 8(WIN) and 127(Mac/Linux) is backspace
+            if(ch == 8 || ch == 127)
             {
                 if(!query.empty())
                 {
@@ -205,7 +229,7 @@ int main()
             
             auto duration_typahd = chrono::duration_cast<chrono::microseconds>(end_time_typahd - start_time_typahd);
            
-            system("cls"); //clear terminal screen
+            system(CLEAR_SCREEN); //clear terminal screen
 
             cout << "\nSuggestions: \n";
 

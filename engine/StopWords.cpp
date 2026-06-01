@@ -5,21 +5,24 @@ using namespace std;
 StopWordsManager::StopWordsManager(string filepath)
 {
     ifstream file(filepath);
-    if(!file.is_open()){
+    if(!file.is_open())
+    {
         cerr << "Warning: could not open " << filepath << " for stopwords extraction" << endl;
         return;
     }
 
     string line;
     
-    while(getline(file, line)) {
+    while(getline(file, line))
+    {
 
         if(line.empty() || line[0] == '#' || line[0] == ' ') continue;
 
         stringstream ss(line);
         string word;
         
-        while(getline(ss, word)) {
+        while(getline(ss, word))
+        {
             if(!word.empty() && word.back() == '\r') word.pop_back();
             if(!word.empty()) stopwords.insert(word);
         }

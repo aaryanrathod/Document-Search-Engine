@@ -118,19 +118,20 @@ void Trie::fuzzy_search_recursive(Node* node, const string& query, vector<int>& 
     }
 
     // Dont search in the branch if it has too many errors
-    if (min_dist > max_edits) return; 
+    if(min_dist > max_edits) return; 
 
     // If the edit distance from the current word to the full query is okay okay
-    if (curr_row.back() <= max_edits)
+    if(curr_row.back() <= max_edits)
     {
         // Switch to exact autocomplete from this node downward
         dfs(node, results, curr_word);
-    } else 
+    }
+    else 
     {
         // Otherwise, continue exploring fuzzy paths
-        for (int i = 0; i < 36; ++i) 
+        for(int i = 0; i < 36; ++i) 
         {
-            if (node->links[i] != NULL) 
+            if(node->links[i] != NULL) 
             {
                 char next_ch = (i < 26) ? (i + 'a') : ((i - 26) + '0');
                 fuzzy_search_recursive(node->links[i], query, curr_row, results, curr_word + next_ch, max_edits);
@@ -143,16 +144,16 @@ vector<string> Trie::fuzzy_autocomplete(string query, int max_edits)
 {
     vector<string> results;
     // Dont apply typo tolerance to tiny words (e.g., 'a', 'on', 'is')
-    if (query.length() < 4) return results; 
+    if(query.length() < 4) return results; 
     
     int cols = query.size() + 1;
     vector<int> first_row(cols);
-    for (int i = 0; i < cols; ++i) first_row[i] = i;
+    for(int i = 0; i < cols; ++i) first_row[i] = i;
 
     // Boot up the recursive search for every root branch
-    for (int i = 0; i < 36; ++i) 
+    for(int i = 0; i < 36; ++i) 
     {
-        if (root->links[i] != NULL) 
+        if(root->links[i] != NULL) 
         {
             char next_ch = (i < 26) ? (i + 'a') : ((i - 26) + '0');
             string curr_word = "";
@@ -164,35 +165,41 @@ vector<string> Trie::fuzzy_autocomplete(string query, int max_edits)
 }
 
 void Trie::save_recursive(Node* node, string curr_word, std::ofstream& out) {
-    // If we hit the end of a valid word, write it to disk!
-    if (node->is_end()) {
+    // If we hit the end of a valid word, write it to disk
+    if(node->is_end())
+    {
         int len = curr_word.length();
         out.write((char*)&len, sizeof(int));
         out.write(curr_word.c_str(), len);
     }
     // Continue exploring the Trie
-    for (int i = 0; i < 36; ++i) {
-        if (node->links[i] != NULL) {
+    for(int i = 0; i < 36; ++i)
+    {
+        if(node->links[i] != NULL)
+        {
             char next_ch = (i < 26) ? (i + 'a') : ((i - 26) + '0');
             save_recursive(node->links[i], curr_word + next_ch, out);
         }
     }
 }
 
-void Trie::save_trie(const string& filename) {
+void Trie::save_trie(const string& filename)
+{
     std::ofstream out(filename, std::ios::binary);
-    if (!out) return;
+    if(!out) return;
     save_recursive(root, "", out);
 }
 
-bool Trie::load_trie(const string& filename) {
+bool Trie::load_trie(const string& filename)
+{
     std::ifstream in(filename, std::ios::binary);
-    if (!in) return false;
+    if(!in) return false;
     
-    while (true) {
+    while(true)
+    {
         int len;
-        // Try to read the next word length. If it fails, we reached the end of the file!
-        if (!in.read((char*)&len, sizeof(int))) break; 
+        // Try to read the next word length. If it fails, we reached the end of the file
+        if(!in.read((char*)&len, sizeof(int))) break; 
         
         string word;
         word.resize(len);

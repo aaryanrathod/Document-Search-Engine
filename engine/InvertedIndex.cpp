@@ -31,7 +31,8 @@ void add_doc(int id, string title, string filepath, BloomFilter& bloom)
     cout <<"Added document: "<< title << endl;
 }
 
-void save_index(const string& filename) {
+void save_index(const string& filename)
+{
     ofstream out(filename, ios::binary);
     if (!out) return;
 
@@ -111,7 +112,7 @@ bool load_index(const string& filename) {
         int num_docs;
         in.read((char*)&num_docs, sizeof(int));
 
-        
+
         for (int j = 0; j < num_docs; ++j) {
             int docID, freq, num_pos;
             in.read((char*)&docID, sizeof(int));
