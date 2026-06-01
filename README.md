@@ -8,7 +8,7 @@ This project goes far beyond a simple string-matcher. It is a complete Informati
 
 ###  Enterprise-Grade Systems
 * **Typo Tolerance (Fuzzy Search):** A dynamic programming Levenshtein algorithm woven directly into a custom Trie structure. It detects spelling errors in real-time and autocorrects them in `O(prefix)` time.
-* **Incremental Binary Serialization:** The engine serializes its massive Inverted Index and Corpus directly from RAM to pure binary bytes on the hard drive (`index.dat`). This allows the engine to boot in `< 1 millisecond`. If new documents are added, the engine performs incremental indexing—appending only the new files without needing a full rebuild.
+* **Incremental Binary Serialization:** The engine serializes its massive Inverted Index and Corpus directly from RAM to pure binary bytes on the hard drive (`index.dat`). This allows the engine to boot in `< 50 milliseconds`. If new documents are added, the engine performs incremental indexing—appending only the new files without needing a full rebuild.
 * **Probabilistic Guarding (Bloom Filter):** Implements a highly optimized, bit-level Bloom Filter to act as an `O(1)` bouncer. If a user searches for a word that doesn't exist in the corpus, the Bloom Filter instantly blocks the query, saving expensive disk/index lookups.
 * **Algorithmic Porter Stemmer & Stopwords:** A custom NLP pipeline that algorithmically strips English suffixes (e.g., `-ing`, `-ed`, `-ly`, plurals) to reduce words to their roots, dramatically increasing search recall without sacrificing precision.
 
