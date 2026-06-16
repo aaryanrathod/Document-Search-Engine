@@ -195,7 +195,7 @@ int main()
     }
     avg_doc_len = avg_doc_len / corpus.size();
 
-    // Pre-calculate IDF scores for all words in the index
+    // Precalculate IDF scores for all words in the index
     double N = corpus.size();
     for (const auto& pair : Inverted_Index) {
         const string& word = pair.first;

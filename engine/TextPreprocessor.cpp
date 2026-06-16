@@ -100,7 +100,7 @@ int extract_words_simplified(int currentDocID, const string& filename, BloomFilt
     }
 
     // 2. We have finished reading the entire file 
-    // NOW we lock the bathroom door EXACTLY ONCE to merge our local data into the globals.
+    // now we lock the mutex exactly once to merge our local data into the globals.
     std::lock_guard<std::mutex> lock(index_mutex);
 
     for(const auto& pair : local_map) {

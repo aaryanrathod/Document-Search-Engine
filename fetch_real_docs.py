@@ -1,10 +1,10 @@
 import os
 from sklearn.datasets import fetch_20newsgroups
 
-# Create a directory for our real-world dataset
+# Create a directory for our real world dataset
 os.makedirs("real_text_docs", exist_ok=True)
 
-print("Downloading the 20 Newsgroups dataset (this might take a minute)...")
+print("Downloading the 20 Newsgroups dataset...")
 # We remove headers and footers to just get the raw, natural text body
 newsgroups_data = fetch_20newsgroups(subset='all', remove=('headers', 'footers', 'quotes'))
 
