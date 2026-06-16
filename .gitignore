@@ -1,4 +1,19 @@
+# Executables
+*.exe
 SearchEngine.exe
+thread_test.exe
+
+# Object files and Binary Indexes
+*.o
+*.dat
+index.dat
+trie.dat
+
+# Datasets
+real_text_docs/
+data/
+
+# Scratch files
 can_be_implemented.txt
 conio_sample.cpp
-*.dat
+thread_test.cpp

@@ -13,6 +13,10 @@
 #include <chrono> //for measuring time taken
 #include <cmath>
 #include <unordered_set>
+#include <thread>
+#include <mutex>
+#include <atomic>
+std::mutex index_mutex;
 
 //Cross-Platform Typeahead & Screen Clear
 #ifdef _WIN32
@@ -54,12 +58,34 @@ vector<string> split_by_space(const string& str) {
     return res;
 }
 
+void index_worker(const vector<pair<string, string>>& job_queue, atomic<int>& job_index, BloomFilter& bloom)
+{
+    while(true)
+    {
+        //grab the next job id
+        int my_job = job_index.fetch_add(1);
+
+        //if the index is out of bounds, the queue is empty. Thus kill the thread
+        if(my_job >= job_queue.size()) break;
+
+        //consider the data for this job
+        string fileName = job_queue[my_job].first;
+        string fullPath = job_queue[my_job].second;
+
+        //we calculate the doc_id based on the job index to keep it unique
+        int local_doc_id = my_job + 1;
+
+        //Call our heavy add_doc function
+        add_doc(local_doc_id, fileName, fullPath, bloom);
+    }
+}
+
 int main()
 {
     cout << "Starting main..." << endl;
 
-    string folderPath = "./data"; 
-    BloomFilter global_bloom(10000);
+    string folderPath = "./real_text_docs"; 
+    BloomFilter global_bloom(1000000);
 
     auto start_time_ind_gen = chrono::high_resolution_clock::now();
     
@@ -89,30 +115,69 @@ int main()
     int doc_id = max_id + 1; // Start ID for new documents
     int new_files_added = 0;
 
+    //START Parallel Benchmark
+    auto start_ingestion = chrono::high_resolution_clock::now();
+
     try {
-        if (fs::exists(folderPath) && fs::is_directory(folderPath)) {
-            for (const auto& entry : fs::directory_iterator(folderPath)) {
-                if (entry.is_regular_file() && entry.path().extension() == ".txt") {
+        if (fs::exists(folderPath) && fs::is_directory(folderPath))
+        {
+            //1. Build the todo list (job_queue)
+            vector<pair<string, string>> job_queue;
+            for (const auto& entry : fs::directory_iterator(folderPath))
+            {
+                if (entry.is_regular_file() && entry.path().extension() == ".txt")
+                {
                     if (entry.path().filename().string() == "synonyms.txt") continue;
-                    
-                    string fileName = entry.path().filename().string();
+
                     string fullPath = entry.path().string();            
 
                     // Incremental Check: if file not seen before, update it
-                    if (seen_files.find(fullPath) == seen_files.end()) {
-                        cout << "Indexing new file: " << fileName << endl;
-                        add_doc(doc_id, fileName, fullPath, global_bloom);
-                        doc_id++; 
-                        new_files_added++;
+                    if (seen_files.find(fullPath) == seen_files.end())
+                    {
+                        // cout << "Indexing new file: " << fileName << endl;
+                        job_queue.push_back({entry.path().filename().string(), fullPath});
                     }
                 }
             }
-        } else {
+
+            //2. Set up atomic pointer and thread pool vector
+            atomic<int> current_job_index = 0;
+            vector<thread> workers;
+
+            //use hardware_concurrency to take as many threads as you have CPU cores
+            int num_threads = thread::hardware_concurrency();
+            cout << "Spawning " << num_threads << " worker threads..." << endl;
+
+            //3. start workers
+            for(int i = 0; i < num_threads; i++)
+            {
+                workers.emplace_back(index_worker, ref(job_queue), ref(current_job_index), ref(global_bloom));
+            }
+
+            //4. wait for all workers to finish their job
+            for(auto& t : workers)
+            {
+                t.join();
+            }
+
+            new_files_added = job_queue.size();
+            doc_id += new_files_added;
+        }
+        else
+        {
             cerr << "Error: Directory path does not exist." << endl;
         }
-    } catch (const fs::filesystem_error& e) {
+    }
+    catch (const fs::filesystem_error& e)
+    {
         cerr << "Filesystem Error: " << e.what() << endl;
     }
+
+    auto end_ingestion = chrono::high_resolution_clock::now();
+    auto ingestion_duration = chrono::duration_cast<chrono::milliseconds>(end_ingestion - start_ingestion);
+    cout << "\n[BENCHMARK] Parallel Ingestion Time: " << ingestion_duration.count() << " ms\n";
+
+    //END Sequential Benchmark
 
     // If new files were added (or we built from scratch), save to disk for next time
     if (new_files_added > 0 || !index_loaded) {
@@ -508,8 +573,8 @@ int main()
             sort(bm25_rank.rbegin(), bm25_rank.rend()); // Highest to Lowest
             global_cache.put(query, bm25_rank); // CACHE IT AFTER SORTING
             cout << "Results for '" << query << "' (Searched in " << duration.count() << " microseconds):" << endl;
-            cout << "\nYour words can be found in these documents:\n";
-            for(int i = 0; i < bm25_rank.size(); i++)
+            cout << "\nTop 10 results found in these documents:\n";
+            for(int i = 0; i < min((int)bm25_rank.size(), 10); i++)
             {
                 cout << "{File: " << corpus[bm25_rank[i].second - 1].filepath << ", " << "BM25 Score: " << bm25_rank[i].first << "}" << endl;
             }

@@ -6,7 +6,9 @@ This project goes far beyond a simple string-matcher. It is a complete Informati
 
 ##  Core Architecture & Features
 
-###  Enterprise-Grade Systems
+### 🏆 Enterprise-Grade Systems
+* **Highly-Concurrent Thread Pool:** Achieves near-perfect linear CPU scaling for document ingestion by utilizing a lock-free `std::atomic` task queue distributed across an `N-core` worker pool.
+* **Granular Synchronization:** Bypasses lock contention bottlenecks via *Local Aggregation*—worker threads parse documents offline and synchronize with a global `std::mutex` solely for microsecond-duration Map Reduction updates.
 * **Typo Tolerance (Fuzzy Search):** A dynamic programming Levenshtein algorithm woven directly into a custom Trie structure. It detects spelling errors in real-time and autocorrects them in `O(prefix)` time.
 * **Incremental Binary Serialization:** The engine serializes its massive Inverted Index and Corpus directly from RAM to pure binary bytes on the hard drive (`index.dat`). This allows the engine to boot in `< 1 milliseconds`. If new documents are added, the engine performs incremental indexing—appending only the new files without needing a full rebuild.
 * **Probabilistic Guarding (Bloom Filter):** Implements a highly optimized, bit-level Bloom Filter to act as an `O(1)` bouncer. If a user searches for a word that doesn't exist in the corpus, the Bloom Filter instantly blocks the query, saving expensive disk/index lookups.
@@ -27,6 +29,6 @@ This project goes far beyond a simple string-matcher. It is a complete Informati
 
 ##  Getting Started
 
-1. **Compile:** `g++ -std=c++17 engine/*.cpp -o SearchEngine`
-2. **Run:** `./SearchEngine`
-3. **Data:** Drop any `.txt` files into the `./data/` folder. The engine will automatically detect them, index them, and update the binary `index.dat` file.
+1. **Generate Dataset:** Run `python fetch_real_docs.py` to automatically download a massive 5,000+ document dataset into the `./real_text_docs/` folder (requires `scikit-learn`).
+2. **Compile:** `g++ -std=c++17 engine/*.cpp -o SearchEngine`
+3. **Run:** `./SearchEngine` (or `.\SearchEngine.exe` on Windows). The engine will automatically detect the documents, spin up the thread pool to index them in parallel, and generate the binary `.dat` caches.

@@ -1,8 +1,10 @@
 #include "InvertedIndex.h"
 #include "TextPreprocessor.h"
 #include "trie.h"
-#include<iostream>
-#include<fstream>
+#include <iostream>
+#include <fstream>
+#include <mutex>
+extern std::mutex index_mutex;
 
 vector<Document> corpus;
 unordered_map<string, unordered_map<int, doc_info>> Inverted_Index;
@@ -25,10 +27,11 @@ void add_doc(int id, string title, string filepath, BloomFilter& bloom)
     //     }
     //     cout << "]"<<endl;
     // }
+    lock_guard<mutex> lock(index_mutex);
     corpus.push_back(doc);
 
 
-    cout <<"Added document: "<< title << endl;
+    // cout <<"Added document: "<< title << endl;
 }
 
 void save_index(const string& filename)

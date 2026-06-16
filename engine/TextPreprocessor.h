@@ -8,4 +8,4 @@
 
 int extract_words_simplified(int currentDocID, const std::string& filename, BloomFilter& bloom);
 
-#endif // PARSER_
+#endif
